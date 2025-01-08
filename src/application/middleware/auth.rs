@@ -4,7 +4,7 @@ use axum::{body::{Body}, extract::Request, http::{header::{AUTHORIZATION}, Statu
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
 use serde::{Deserialize, Serialize};
-use serde_json::{de, json};
+use serde_json::{json};
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {

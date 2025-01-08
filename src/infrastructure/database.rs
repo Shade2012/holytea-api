@@ -1,5 +1,4 @@
 use sqlx::postgres::{PgPoolOptions,PgPool};
-use dotenv::dotenv;
 use std::env;
 
 pub async fn establish_connection() -> PgPool {

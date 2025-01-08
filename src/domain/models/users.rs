@@ -7,6 +7,7 @@ pub struct User {
     pub email: String,
     pub password: Option<String>,
     pub created_at: Option<chrono::NaiveDateTime>,
+    pub updated_at: Option<chrono::NaiveDateTime>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -15,6 +16,7 @@ pub struct UserResponse {
     pub username: String,
     pub email: String,
     pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
 }
 
 pub fn user_to_response(user: &User) -> UserResponse {
@@ -23,5 +25,6 @@ pub fn user_to_response(user: &User) -> UserResponse {
         username: user.username.to_owned(),
         email: user.email.to_owned(),
         created_at: user.created_at.as_ref().unwrap().to_owned(),
+        updated_at: user.updated_at.as_ref().unwrap().to_owned(),
     }
 }
