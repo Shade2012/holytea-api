@@ -42,7 +42,6 @@ pub async fn middleware(mut req:Request,next:Next)->Result<Response,AuthError>{
         }),
     };
     let mut header = auth_header.split_whitespace();
-    println!("ini header {:?}",header);
     let (bearer,token)=(header.next(),header.next());
     if bearer != Some("Bearer") || token.is_none(){
         return Err(AuthError{
