@@ -14,7 +14,7 @@ pub struct Product {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,Debug,Clone)]
 pub struct ProductResponse {
     pub id: i32,
     pub product_name: String,

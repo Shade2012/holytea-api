@@ -8,7 +8,7 @@ use tower_http::services::ServeDir;
 
 // use crate::application::commands::create_user_command::User::{self, create_user_command};
 
-use crate::application::{commands::{Product::{create_product_command::create_product_command, delete_product_command::delete_product_command, update_products_command::update_products_command}, User::create_user_command::create_user_command}, middleware::auth, queries::{Product::{all_products_query::all_products_query, detail_product_query::detail_product_query}, User::{all_users_queries::all_users_queries, login_user_queries::login_user_queries}}};
+use crate::application::{commands::{Payment::create_payment_commands::create_payment_command, PaymentHistory::create_payment_history::create_payment_history_command, Product::{create_product_command::create_product_command, delete_product_command::delete_product_command, update_products_command::update_products_command}, User::create_user_command::create_user_command}, middleware::auth, queries::{PaymentHistory::all_payment_history_query::all_payment_history_query, Product::{all_products_query::all_products_query, detail_product_query::detail_product_query}, User::{all_users_queries::all_users_queries, login_user_queries::login_user_queries}}};
 
 use super::health_checker_handler;
 
@@ -29,6 +29,12 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     .nest("/users", Router::new()
         .route("/all_users", get(all_users_queries))
     )
+    //Payment routes
+    .nest("/payment", Router::new()
+          .route("/create-payment", post(create_payment_command))
+          .route("/create-payment-history", post(create_payment_history_command))
+          .route("/get-payment-history", get(all_payment_history_query))
+    )
         
     //Product routes
         .nest(    
@@ -41,7 +47,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     )  
 
     //Auth Middleawre
-        .layer(middleware::from_fn(auth::middleware))
+    .layer(middleware::from_fn(auth::middleware))
     )
     .nest_service("/public", get_service(ServeDir::new("public")).handle_error(|error| async move{
         (

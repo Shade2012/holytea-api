@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::models::payment_history::StatusPayment;
+
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct CreateUserSchema {
@@ -15,7 +17,7 @@ pub struct LoginUserSchema{
     pub password:String
 }
 
-#[derive(Serialize, Deserialize, Default,Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CreateProductSchema{
     pub product_name: String,
     pub product_image: String,
@@ -31,6 +33,34 @@ impl CreateProductSchema{
             product_price,
             product_stock,
             product_available
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Default,Debug)]
+pub struct CreatePaymentSchema{
+    pub id_product: i32,
+    pub product_amount: i16,
+}
+impl CreatePaymentSchema{
+    pub fn extract( id_product: i32, product_amount: i16) -> Self {
+        CreatePaymentSchema{
+            id_product,
+            product_amount
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize,Debug)]
+pub struct CreatePaymentHistorySchema{
+    pub user_amount_money: i64,
+    pub list_payment: Vec<CreatePaymentSchema>
+}
+impl CreatePaymentHistorySchema{
+    pub fn extract(list_payment:Vec<CreatePaymentSchema>, user_amount_money: i64) -> Self {
+        CreatePaymentHistorySchema{
+            list_payment,
+            user_amount_money,
         }
     }
 }
