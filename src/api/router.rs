@@ -1,14 +1,37 @@
 
 use std::sync::Arc;
 use axum::{
-    extract::DefaultBodyLimit, middleware, routing::{delete, get, get_service, post}, Router, ServiceExt
+    extract::DefaultBodyLimit, middleware, routing::{delete, get, get_service, post}, Router
 };
 use sqlx::postgres::PgPool;
 use tower_http::services::ServeDir;
 
 // use crate::application::commands::create_user_command::User::{self, create_user_command};
 
-use crate::application::{commands::{Payment::create_payment_commands::create_payment_command, PaymentHistory::create_payment_history::create_payment_history_command, Product::{create_product_command::create_product_command, delete_product_command::delete_product_command, update_products_command::update_products_command}, User::create_user_command::create_user_command}, middleware::auth, queries::{PaymentHistory::all_payment_history_query::all_payment_history_query, Product::{all_products_query::all_products_query, detail_product_query::detail_product_query}, User::{all_users_queries::all_users_queries, login_user_queries::login_user_queries}}};
+use crate::application::{
+    commands::{
+        Payment::create_payment_commands::create_payment_command,
+        PaymentHistory::create_payment_history::create_payment_history_command, 
+        Product::{
+            create_product_command::create_product_command, 
+            delete_product_command::delete_product_command, 
+            update_products_command::update_products_command
+        }, 
+        User::create_user_command::create_user_command
+    },
+    middleware::auth,
+    queries::{
+        testing::testing,
+        PaymentHistory::all_payment_history_query::all_payment_history_query,
+        Product::{
+            all_products_query::all_products_query, 
+            detail_product_query::detail_product_query
+        }, User::{
+            all_users_queries::all_users_queries, 
+            login_user_queries::login_user_queries
+        }
+    }
+};
 
 use super::health_checker_handler;
 
@@ -29,6 +52,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     .nest("/users", Router::new()
         .route("/all_users", get(all_users_queries))
     )
+    .route("/testing", get(testing))
     //Payment routes
     .nest("/payment", Router::new()
           .route("/create-payment", post(create_payment_command))

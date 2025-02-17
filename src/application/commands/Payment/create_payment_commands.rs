@@ -5,7 +5,6 @@ use jsonwebtoken::TokenData;
 use serde_json::json;
 
 use crate::{api::router::AppState, application::{middleware::auth::{decode_jwt, Claims}, services::error_response::error_response}, domain::{models::{payment::{payment_to_response, Payment}, product::{product_to_response, Product}}, schema::CreatePaymentSchema}};
-
 pub async fn create_payment_command(
     State(data): State<Arc<AppState>>,
     Json(payload):Json<CreatePaymentSchema>

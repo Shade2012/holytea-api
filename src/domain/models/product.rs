@@ -1,8 +1,9 @@
 use std::env;
 
 use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,FromRow)]
 pub struct Product {
     pub id: Option<i32>,
     pub product_name: String,

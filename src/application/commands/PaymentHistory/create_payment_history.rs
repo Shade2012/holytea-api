@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Extension, Json};
+use rand::Rng;
 
-use crate::{api::router::AppState, application::services::error_response::{self, error_response}, domain::{models::{payment::Payment, payment_history::{PaymentHistory, StatusPayment}}, schema::{CreatePaymentHistorySchema, CreatePaymentSchema}}};
+use crate::{api::router::AppState, application::services::error_response::{self, error_response}, domain::{models::{payment::Payment, payment_history::{PaymentHistory, StatusPayment}}, schema::{CreatePaymentHistorySchema, CreatePaymentSchema}}, infrastructure::services::generate_resi_numbers::generate_resi_numbers};
+
 
 pub async fn create_payment_history_command (
     State(data): State<Arc<AppState>>,
@@ -10,17 +12,20 @@ pub async fn create_payment_history_command (
     Json(payload): Json<CreatePaymentHistorySchema>
 ) -> Result<impl IntoResponse,(StatusCode,Json<serde_json::Value>)>{
     // Start a transaction to ensure atomicity
+    let resi_number = generate_resi_numbers(&data).await;
+
     let payment_history = sqlx::query_as!(
         PaymentHistory,
         r#"
-        INSERT INTO payment_history (user_id, user_amount_money, total_price, status_payment)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, user_id, user_amount_money, total_price, status_payment AS "status_payment!: StatusPayment", created_at, updated_at
+        INSERT INTO payment_history (user_id, user_amount_money, total_price, status_payment, resi_number)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, user_id, user_amount_money, total_price, status_payment AS "status_payment!: StatusPayment", resi_number, created_at, updated_at
         "#,
         user_id,
         payload.user_amount_money,
         0,
-        StatusPayment::Pending as StatusPayment
+        StatusPayment::Pending as StatusPayment,
+        resi_number.unwrap()
     )
     .fetch_one(&data.db)
     .await
@@ -59,8 +64,6 @@ pub async fn create_payment_history_command (
             result.err().unwrap()
         );
     }
-    
-   
 }
 
 async fn handle_create_payment_history(

@@ -7,6 +7,7 @@ use sqlx::query_as;
 use crate::{api::router::AppState, domain::models::product::{product_to_response, Product, ProductResponse}};
 
 pub async fn all_products_query(
+    
     State(data): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse,(StatusCode,Json<serde_json::Value>)>{
     let products = query_as!(
