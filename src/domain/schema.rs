@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use super::models::payment_history::StatusPayment;
-
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct CreateUserSchema {
@@ -85,4 +83,48 @@ impl UpdateProductSchema{
         }
     }
 }
+#[derive(Serialize, Deserialize,Debug)]
+pub struct Invoices {
+    pub payment_method: Option<String>,
+    pub invoice_url : String,
+    pub expiry_date: String,
+    pub status_history: Option<String>,
+    pub status_payment: Option<String>,
+}
 
+#[derive(Serialize, Deserialize, Default,Debug)]
+pub struct CreatedInvoices {
+    pub external_id: String,
+    pub items : Vec<InvoiceItem>,
+    pub amount: i64,
+    pub locale: String,
+    pub payment_methods:Vec<String>,
+    pub currency: String,
+    pub invoice_duration: u32
+}
+impl CreatedInvoices{
+    pub fn extract(external_id: String, items: Vec<InvoiceItem>, amount: i64) -> Self {
+        CreatedInvoices{
+            external_id,
+            items,
+            amount,
+            payment_methods: vec![
+                "OVO".to_string(), 
+                "DANA".to_string(), 
+                "SHOPEEPAY".to_string(),  
+                "LINKAJA".to_string(),  
+                "JENIUSPAY".to_string(),  
+                "QRIS".to_string()
+            ],
+            currency: "IDR".to_string(),
+            locale:"id".to_string(),
+            invoice_duration:86400
+        }
+    }
+}
+#[derive(Serialize, Deserialize,Debug)]
+pub struct InvoiceItem {
+    pub name: String,
+    pub price: Option<i32>,
+    pub quantity: Option<i16>,
+}

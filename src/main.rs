@@ -8,7 +8,8 @@ async fn main() {
     dotenv().ok();
     //Init Connection
     let pool = establish_connection().await;
-    let shared_state = Arc::new(AppState{db:pool});
+    let client = reqwest::Client::new();
+    let shared_state = Arc::new(AppState{db:pool,client});
 
     // Create the router and attach the state
     let app = create_router(shared_state);
@@ -22,6 +23,6 @@ async fn main() {
         format!("http://127.0.0.0:8080")
     };
     
-    println!("ini url {}",url);
+    println!("✅ This is the url {}",url);
     axum::serve(listener,app).await.unwrap();
 }

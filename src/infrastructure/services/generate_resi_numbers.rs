@@ -8,7 +8,6 @@ use crate::{api::router::AppState, application::services::error_response::error_
 //Result<impl IntoResponse,(StatusCode, Json<serde_json::Value>)>
 
 pub async fn generate_resi_numbers(
-    
     data: &Arc<AppState>,
 ) -> Result<String, (StatusCode, Json<serde_json::Value>)> {
     let mut rng = rand::rngs::StdRng::from_entropy();

@@ -1,9 +1,12 @@
-
-use std::sync::Arc;
 use axum::{
-    extract::DefaultBodyLimit, middleware, routing::{delete, get, get_service, post}, Router
+    extract::DefaultBodyLimit,
+    middleware,
+    routing::{delete, get, get_service, post},
+    Router,
 };
+use reqwest::Client;
 use sqlx::postgres::PgPool;
+use std::sync::Arc;
 use tower_http::services::ServeDir;
 
 // use crate::application::commands::create_user_command::User::{self, create_user_command};
@@ -11,74 +14,88 @@ use tower_http::services::ServeDir;
 use crate::application::{
     commands::{
         Payment::create_payment_commands::create_payment_command,
-        PaymentHistory::create_payment_history::create_payment_history_command, 
+        PaymentHistory::create_payment_history::create_payment_history_command,
         Product::{
-            create_product_command::create_product_command, 
-            delete_product_command::delete_product_command, 
-            update_products_command::update_products_command
-        }, 
-        User::create_user_command::create_user_command
+            create_product_command::create_product_command,
+            delete_product_command::delete_product_command,
+            update_products_command::update_products_command,
+        },
+        User::create_user_command::create_user_command,
     },
     middleware::auth,
     queries::{
         testing::testing,
         PaymentHistory::all_payment_history_query::all_payment_history_query,
         Product::{
-            all_products_query::all_products_query, 
-            detail_product_query::detail_product_query
-        }, User::{
-            all_users_queries::all_users_queries, 
-            login_user_queries::login_user_queries
-        }
-    }
+            all_products_query::all_products_query, detail_product_query::detail_product_query,
+        },
+        User::{all_users_queries::all_users_queries, login_user_queries::login_user_queries},
+    }, services::Xendit::{invoice_hook::invoice_hook, payout_link_command::payout_link_command},
 };
 
 use super::health_checker_handler;
 
-
-
 pub struct AppState {
     pub db: PgPool,
- }
+    pub client: Client,
+}
+
+
 
 pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
-    .route("/api/healthcheck", get(health_checker_handler))
-    .route("/api/register", post(create_user_command))
-    .route("/api/login", post(login_user_queries))
-    .nest("/api", Router::new()
-
-    //User routes
-    .nest("/users", Router::new()
-        .route("/all_users", get(all_users_queries))
-    )
-    .route("/testing", get(testing))
-    //Payment routes
-    .nest("/payment", Router::new()
-          .route("/create-payment", post(create_payment_command))
-          .route("/create-payment-history", post(create_payment_history_command))
-          .route("/get-payment-history", get(all_payment_history_query))
-    )
-        
-    //Product routes
-        .nest(    
-        "/product", Router::new()
-        .route("/all-products", get(all_products_query))
-        .route("/detail-product/:id", get(detail_product_query))
-        .route("/add-product", post(create_product_command))
-        .route("/update-product/:id", post(update_products_command))
-        .route("/delete-product/:id", delete(delete_product_command))
-    )  
-
-    //Auth Middleawre
-    .layer(middleware::from_fn(auth::middleware))
-    )
-    .nest_service("/public", get_service(ServeDir::new("public")).handle_error(|error| async move{
-        (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Unhandled error: {}", error),
+        .route("/api/healthcheck", get(health_checker_handler))
+        .route("/api/register", post(create_user_command))
+        .route("/api/login", post(login_user_queries))
+        .nest(
+            "/api",
+            Router::new()
+                //User routes
+                .nest(
+                    "/users",
+                    Router::new().route("/all_users", get(all_users_queries)),
+                )
+                .route("/testing", get(testing))
+                //Payment routes
+                .nest(
+                    "/payment",
+                    Router::new()
+                        .route("/create-payment", post(create_payment_command))
+                        .route(
+                            "/create-payment-history",
+                            post(create_payment_history_command),
+                        )
+                        .route("/get-payment-history", get(all_payment_history_query)),
+                )
+                //Product routes
+                .nest(
+                    "/product",
+                    Router::new()
+                        .route("/all-products", get(all_products_query))
+                        .route("/detail-product/:id", get(detail_product_query))
+                        .route("/add-product", post(create_product_command))
+                        .route("/update-product/:id", post(update_products_command))
+                        .route("/delete-product/:id", delete(delete_product_command)),
+                )
+                //Auth Middleawre
+                .layer(middleware::from_fn(auth::middleware)),
         )
-    }))
-    .layer(DefaultBodyLimit::disable())
-    .with_state(state)
+        //Xendit routes
+        .nest(
+            "/xendit",
+            Router::new()
+            .route("/payout_link", post(payout_link_command))
+            .route("/invoice_hook", post(invoice_hook))
+        )
+        .nest_service(
+            "/public",
+            get_service(ServeDir::new("public")).handle_error(|error| async move {
+                (
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Unhandled error: {}", error),
+                )
+            }),
+        )
+        .layer(DefaultBodyLimit::disable())
+        .with_state(state)
 }
