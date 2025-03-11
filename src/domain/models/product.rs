@@ -1,6 +1,9 @@
-use serde::{Deserialize, Serialize};
+use std::env;
 
-#[derive(Deserialize, Serialize)]
+use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
+
+#[derive(Deserialize, Serialize,FromRow)]
 pub struct Product {
     pub id: Option<i32>,
     pub product_name: String,
@@ -12,7 +15,7 @@ pub struct Product {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,Debug,Clone)]
 pub struct ProductResponse {
     pub id: i32,
     pub product_name: String,
@@ -28,7 +31,7 @@ pub fn product_to_response(product: &Product) -> ProductResponse {
    ProductResponse {
         id: product.id.as_ref().unwrap().to_owned(),
         product_name: product.product_name.to_owned(),
-        product_image: format!("http://localhost:8080{}",product.product_image.as_ref().unwrap().to_owned()),
+        product_image: format!("{}{}",env::var("URL").expect("URL must be set"),product.product_image.as_ref().unwrap().to_owned()),
         product_price: product.product_price.to_owned(),
         product_stock: product.product_stock.to_owned(),
         product_available: product.product_available.to_owned(),

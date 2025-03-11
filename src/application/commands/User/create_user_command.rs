@@ -10,7 +10,7 @@ pub async fn create_user_command(
     Json(payload): Json<CreateUserSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     // Hash the password
-    let hash_password = hash(&payload.password, 8).map_err(|_| {
+    let hash_password = hash(&payload.password, 12).map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({
