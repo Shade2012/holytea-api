@@ -2,3 +2,4 @@
 .env
 /public/products
 /public/users
+/xendit_secret_key/secret_api_key.csv
